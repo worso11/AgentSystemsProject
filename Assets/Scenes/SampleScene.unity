@@ -493,7 +493,8 @@ MonoBehaviour:
   agentPrefab: {fileID: 8603384406604132933, guid: 94aabf4bbb26976458f6facc4ea9bdf9, type: 3}
   plantPrefab: {fileID: 1560056060123103730, guid: 414e1df670633794ba48b4525f51f896, type: 3}
   floor: {fileID: 763648947}
-  agentNumber: 20
+  pacificAgentNumber: 10
+  aggressiveAgentNumber: 10
   grassNumber: 100
   mapSize: 100
   roundTime: 10
