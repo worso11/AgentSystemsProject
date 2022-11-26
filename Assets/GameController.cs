@@ -11,7 +11,8 @@ public class GameController : MonoBehaviour
     public GameObject agentPrefab;
     public GameObject plantPrefab;
     public GameObject floor;
-    public int agentNumber;
+    public int pacificAgentNumber;
+    public int aggressiveAgentNumber;
     public int grassNumber;
     public float mapSize;
     public float roundTime;
@@ -33,10 +34,10 @@ public class GameController : MonoBehaviour
         floor.GetComponent<NavMeshSurface>().BuildNavMesh();
         GameObject.FindWithTag("MainCamera").transform.position = new Vector3(0, 7*mapSize/10, -7*mapSize/10);
         
-        for (var i = 0; i < agentNumber; i++)
+        for (var i = 0; i < pacificAgentNumber + aggressiveAgentNumber; i++)
         {
             /* Get the spawn position */
-            var spawnPos = GetSpawnPosition(i, agentNumber);
+            var spawnPos = GetSpawnPosition(i, pacificAgentNumber + aggressiveAgentNumber);
          
             /* Now spawn */
             var agent = Instantiate(agentPrefab, spawnPos, Quaternion.identity);
@@ -49,6 +50,12 @@ public class GameController : MonoBehaviour
 
             /* Rotate the enemy to face towards player */
             agent.transform.LookAt(Vector3.zero);
+
+            if (i < aggressiveAgentNumber)
+            {
+                agentInfo.GetAgent().Aggressive = true;
+                agent.GetComponent<Renderer>().material.color = Color.red;
+            }
             
             _agents.Add(agent);
         }
@@ -65,12 +72,12 @@ public class GameController : MonoBehaviour
             {
                 var agentInfo = agent.GetComponent<AgentMovementController>().GetAgent();
 
-                if (agent.transform.position != agentInfo.SpawnPosition || agentInfo.Food < 1)
+                if (agent.transform.position != agentInfo.SpawnPosition || agentInfo.Food < 1f)
                 {
                     _agents.Remove(agent);
                     Destroy(agent);
                 }
-                else if (agentInfo.Food > 1)
+                else if (agentInfo.Food >= 2f)
                 {
                     var newAgent = Instantiate(agentPrefab, agentInfo.SpawnPosition, Quaternion.identity);
 
@@ -79,14 +86,39 @@ public class GameController : MonoBehaviour
                     newAgentInfo.time = roundTime;
                     newAgentInfo.Mutate(agent, new [,]{{1-speedModifier, 1+speedModifier}, {1-rangeModifier, 1+rangeModifier}});
                     newAgentInfo.UpdateSpeed();
-         
+
                     /* Rotate the enemy to face towards player */
                     newAgent.transform.LookAt(Vector3.zero);
             
+                    if (agentInfo.Aggressive)
+                    {
+                        Debug.Log("asdasdasdas");
+                        newAgent.GetComponent<AgentMovementController>().GetAgent().Aggressive = true;
+                        newAgent.GetComponent<Renderer>().material.color = Color.red;
+                    }
+                    
                     _agents.Insert(_agents.IndexOf(agent), newAgent);
                 }
             }
 
+            var aggr = 0;
+            var pac = 0;
+            
+            foreach (var agent in _agents.ToList())
+            {
+                if (agent.GetComponent<AgentMovementController>().GetAgent().Aggressive)
+                {
+                    aggr += 1;
+                }
+                else
+                {
+                    pac += 1;
+                }
+            }
+
+            Debug.Log($"Pacifist: {pac}");
+            Debug.Log($"Aggressive: {aggr}");
+            
             _timeLeft = roundTime;
             
             SpawnPlants();
@@ -94,8 +126,9 @@ public class GameController : MonoBehaviour
             for (var i = 0; i < _agents.Count; i++)
             {
                 var agent = _agents[i];
+                var isAggressive = agent.GetComponent<AgentMovementController>().GetAgent().Aggressive;
                 agent.transform.position = GetSpawnPosition(i, _agents.Count);
-                agent.GetComponent<AgentMovementController>().Initialize();
+                agent.GetComponent<AgentMovementController>().Initialize(isAggressive);
             }
         }
 

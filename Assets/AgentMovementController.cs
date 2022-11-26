@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using DefaultNamespace;
 using UnityEngine;
@@ -31,7 +30,7 @@ public class AgentMovementController : MonoBehaviour {
         _wanderRadius = GameObject.FindWithTag("GameController").GetComponent<GameController>().mapSize;
         _distanceToSpawn = Vector3.Distance(transform.position, _agent.SpawnPosition);
         
-        if ((_distanceToSpawn / _agent.Speed + 0.1 > time && _agent.Food == 1) || _agent.Food == 2)
+        if ((_distanceToSpawn / _agent.Speed + 0.1 > time && _agent.Food is >= 1 and < 2) || _agent.Food >= 2)
         {
             _agent.NavMeshAgent.enabled = false;
             GetComponent<CapsuleCollider>().enabled = false;
@@ -42,6 +41,10 @@ public class AgentMovementController : MonoBehaviour {
             _agent.NavMeshAgent.SetDestination(newPos);
             _timer = 0;
         }
+        else if (_agent.NearPlant && _closePlantsPosition.Count == 0)
+        {
+            StartMoving(0);
+        }
         
         if (time > 0)
         {
@@ -49,14 +52,15 @@ public class AgentMovementController : MonoBehaviour {
         }
     }
 
-    public void Initialize()
+    public void Initialize(bool isAggressive = false)
     {
         _agent = new Agent
         {
             NavMeshAgent = GetComponent<NavMeshAgent>(),
             SpawnPosition = transform.position,
             Speed = GetComponent<NavMeshAgent>().speed,
-            Food = 0
+            Food = 0,
+            Aggressive = isAggressive
         };
         _plant = new GameObject();
         _closePlantsPosition = new List<Vector3>();
@@ -87,10 +91,10 @@ public class AgentMovementController : MonoBehaviour {
             StartGathering(collisionInfo.gameObject, collisionInfo.transform.position);
         }
 
-        Debug.Log("Plants:");
+        //Debug.Log("Plants:");
         foreach (var plant in _closePlantsPosition)
         {
-            Debug.Log(plant);   
+            //Debug.Log(plant);   
         }
     }
     
@@ -101,8 +105,12 @@ public class AgentMovementController : MonoBehaviour {
             if (Vector3.Distance(transform.position,   _agent.PositionToFollow) < 0.5f && !_agent.Stopped)
             {
                 _agent.Stopped = true;
-                Debug.Log($"Close to plant {collisionInfo.transform.position}");
-                StartCoroutine(StartMoving(collisionInfo));
+                //Debug.Log($"Close to plant {collisionInfo.transform.position}");
+                /*if (collisionInfo.gameObject.GetComponent<Plant>().Gathered == 1)
+                {*/
+                    //StartCoroutine(StartMoving(collisionInfo));   
+                GatherPlant(collisionInfo);
+                //}
             }
             
             if (!_agent.Stopped)
@@ -114,18 +122,26 @@ public class AgentMovementController : MonoBehaviour {
 
     public void OnCollisionExit(Collision collisionInfo)
     {
-        Debug.Log($"Far from plant {collisionInfo.transform.position}");
+        //Debug.Log($"Far from plant {collisionInfo.transform.position}");
         _closePlantsPosition.Remove(collisionInfo.transform.position);
     }
 
-    private IEnumerator StartMoving(Collision collisionInfo)
+    private void GatherPlant(Collision collisionInfo)
     {
-        Debug.Log($"Collision with plant ended {collisionInfo.transform.position}");
+        //Debug.Log($"Collision with plant ended {collisionInfo.transform.position}");
         _closePlantsPosition.Remove(collisionInfo.transform.position);
-        Destroy(collisionInfo.gameObject, 1f);
-        Debug.Log($"Collision with plant ended {collisionInfo.transform.position}");
-        yield return new WaitForSeconds(1);
-        _agent.Food += 1;
+        //Destroy(collisionInfo.gameObject, 1f);
+        collisionInfo.gameObject.GetComponent<Plant>().Agents.Add(this);
+        if (collisionInfo.gameObject.GetComponent<Plant>().Agents.Count == 1)
+        {
+            StartCoroutine(collisionInfo.gameObject.GetComponent<Plant>().GatherPlant());   
+        }
+    }
+    
+    public void StartMoving(float food)
+    {
+        //yield return new WaitForSeconds(1);
+        _agent.Food += food;
         var tuple = GetClosestPlant();
         _plant = new GameObject();
         _agent.NavMeshAgent.enabled = true;
@@ -140,19 +156,19 @@ public class AgentMovementController : MonoBehaviour {
 
     private void StartGathering(GameObject gameObject, Vector3 position)
     {
-        if (!gameObject.TryGetComponent(typeof(Plant), out _) || gameObject.GetComponent<Plant>().Gathered)
+        if (!gameObject.TryGetComponent(typeof(Plant), out _) || gameObject.GetComponent<Plant>().Gathered > 1)
         {
             return;
         }
         
-        Debug.Log($"Collision with plant {position}");
+        //Debug.Log($"Collision with plant {position}");
         _agent.NavMeshAgent.enabled = false;
         _agent.NearPlant = true;
         _agent.PositionToFollow = position;
         _agent.PositionToFollow.y = transform.position.y;
         _agent.Stopped = false;
         _plant = gameObject;
-        gameObject.GetComponent<Plant>().Gathered = true;
+        gameObject.GetComponent<Plant>().Gathered += 1;
     }
 
     private Tuple<Vector3, float> GetClosestPlant()
@@ -162,7 +178,7 @@ public class AgentMovementController : MonoBehaviour {
         foreach (var plant in _closePlantsPosition)
         {
             var distance = Vector3.Distance(transform.position, plant);
-            Debug.Log($"{plant}::{distance}");
+            //Debug.Log($"{plant}::{distance}");
             
             if (distance < tuple.Item2)
             {
@@ -218,4 +234,11 @@ public class AgentMovementController : MonoBehaviour {
                 break;
         }
     }
+
+    public bool IsAggressive()
+    {
+        return _agent.Aggressive;
+    }
+    
+    
 }

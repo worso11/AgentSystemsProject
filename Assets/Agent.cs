@@ -19,6 +19,8 @@ namespace DefaultNamespace
 
         public bool Stopped;
 
-        public int Food;
+        public float Food;
+
+        public bool Aggressive;
     }
 }
