@@ -8,12 +8,17 @@ using Random = UnityEngine.Random;
 
 public class GameController : MonoBehaviour
 {
-    public int agentNumber;
-    public int grassNumber;
     public GameObject agentPrefab;
     public GameObject plantPrefab;
-    public float size;
-    public float time;
+    public GameObject floor;
+    public int agentNumber;
+    public int grassNumber;
+    public float mapSize;
+    public float roundTime;
+    public float initSpeed;
+    public float speedModifier;
+    public float initRange;
+    public float rangeModifier;
 
     private List<GameObject> _agents;
     private float _timeLeft;
@@ -22,7 +27,11 @@ public class GameController : MonoBehaviour
     void Start()
     {
         _agents = new List<GameObject>();
-        _timeLeft = time;
+        _timeLeft = roundTime;
+        
+        floor.transform.localScale = new Vector3(mapSize, 0.1f, mapSize);
+        floor.GetComponent<NavMeshSurface>().BuildNavMesh();
+        GameObject.FindWithTag("MainCamera").transform.position = new Vector3(0, mapSize/2, -(4*mapSize)/6);
         
         for (var i = 0; i < agentNumber; i++)
         {
@@ -31,9 +40,13 @@ public class GameController : MonoBehaviour
          
             /* Now spawn */
             var agent = Instantiate(agentPrefab, spawnPos, Quaternion.identity);
+            var agentInfo = agent.GetComponent<AgentMovementController>();
 
-            agent.GetComponent<AgentMovementController>().time = time;
-         
+            agentInfo.time = roundTime;
+            agent.GetComponent<CapsuleCollider>().radius = initRange;
+            agent.GetComponent<NavMeshAgent>().speed = initSpeed;
+            agentInfo.UpdateSpeed();
+
             /* Rotate the enemy to face towards player */
             agent.transform.LookAt(Vector3.zero);
             
@@ -61,7 +74,11 @@ public class GameController : MonoBehaviour
                 {
                     var newAgent = Instantiate(agentPrefab, agentInfo.SpawnPosition, Quaternion.identity);
 
-                    newAgent.GetComponent<AgentMovementController>().time = time;
+                    var newAgentInfo = newAgent.GetComponent<AgentMovementController>();
+                    
+                    newAgentInfo.time = roundTime;
+                    newAgentInfo.Mutate(agent, new [,]{{1-speedModifier, 1+speedModifier}, {1-rangeModifier, 1+rangeModifier}});
+                    newAgentInfo.UpdateSpeed();
          
                     /* Rotate the enemy to face towards player */
                     newAgent.transform.LookAt(Vector3.zero);
@@ -70,7 +87,7 @@ public class GameController : MonoBehaviour
                 }
             }
 
-            _timeLeft = time;
+            _timeLeft = roundTime;
             
             SpawnPlants();
 
@@ -97,7 +114,7 @@ public class GameController : MonoBehaviour
         var spawnDir = new Vector3 (horizontal, 0, vertical);
          
         /* Get the spawn position */ 
-        return new Vector3 (0, 1, 0) + spawnDir * ((size-1)/2); // Radius is just the distance away from the point
+        return new Vector3 (0, 1, 0) + spawnDir * ((mapSize-1)/2); // Radius is just the distance away from the point
     }
 
     private void SpawnPlants()
@@ -111,7 +128,7 @@ public class GameController : MonoBehaviour
 
         for (var i = 0; i < grassNumber; i++)
         {
-            var position = Random.insideUnitSphere * (size/2 - 5);
+            var position = Random.insideUnitSphere * (mapSize/2 - 5);
             position.y = 0;
             var enemy = Instantiate(plantPrefab, position, Quaternion.identity);
 

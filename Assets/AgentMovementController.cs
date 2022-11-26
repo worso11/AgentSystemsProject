@@ -7,8 +7,7 @@ using UnityEngine.AI;
 using Random = UnityEngine.Random;
 
 public class AgentMovementController : MonoBehaviour {
- 
-    public float wanderRadius;
+    
     public float wanderTimer;
     public float time;
 
@@ -17,6 +16,7 @@ public class AgentMovementController : MonoBehaviour {
     private float _timer;
     private float _distanceToSpawn;
     private List<Vector3> _closePlantsPosition;
+    private float _wanderRadius;
 
 
     // Use this for initialization
@@ -28,6 +28,7 @@ public class AgentMovementController : MonoBehaviour {
     // Update is called once per frame
     void Update () {
         _timer += Time.deltaTime;
+        _wanderRadius = GameObject.FindWithTag("GameController").GetComponent<GameController>().mapSize;
         _distanceToSpawn = Vector3.Distance(transform.position, _agent.SpawnPosition);
         
         if ((_distanceToSpawn / _agent.Speed + 0.1 > time && _agent.Food == 1) || _agent.Food == 2)
@@ -37,7 +38,7 @@ public class AgentMovementController : MonoBehaviour {
             transform.position = Vector3.MoveTowards(transform.position,   _agent.SpawnPosition, _agent.Speed * Time.deltaTime);
         }
         else if (!_agent.NearPlant && _timer >= wanderTimer) {
-            Vector3 newPos = RandomNavSphere(transform.position, wanderRadius, -1);
+            Vector3 newPos = RandomNavSphere(Vector3.zero, _wanderRadius, -1);
             _agent.NavMeshAgent.SetDestination(newPos);
             _timer = 0;
         }
@@ -54,13 +55,13 @@ public class AgentMovementController : MonoBehaviour {
         {
             NavMeshAgent = GetComponent<NavMeshAgent>(),
             SpawnPosition = transform.position,
-            Speed = GetComponent<NavMeshAgent>().speed*1.5f,
+            Speed = GetComponent<NavMeshAgent>().speed,
             Food = 0
         };
         _plant = new GameObject();
         _closePlantsPosition = new List<Vector3>();
         _timer = wanderTimer;
-        time = 10;
+        time = GameObject.FindWithTag("GameController").GetComponent<GameController>().roundTime;
         _agent.NavMeshAgent.enabled = true;
         GetComponent<CapsuleCollider>().enabled = true;
     }
@@ -192,5 +193,29 @@ public class AgentMovementController : MonoBehaviour {
     public Agent GetAgent()
     {
         return _agent;
+    }
+    
+    public void UpdateSpeed()
+    {
+        _agent.Speed = GetComponent<NavMeshAgent>().speed;
+    }
+
+    public void Mutate(GameObject parent, float[,] modifiers)
+    {
+        var trait = Random.Range(0, 2);
+        var modifier  = modifiers[trait, Random.Range(0, 2)];
+
+        GetComponent<NavMeshAgent>().speed = parent.GetComponent<NavMeshAgent>().speed;
+        GetComponent<CapsuleCollider>().radius = parent.GetComponent<CapsuleCollider>().radius;
+        
+        switch (trait)
+        {
+            case 0:
+                GetComponent<NavMeshAgent>().speed *= modifier;
+                break;
+            case 1:
+                GetComponent<CapsuleCollider>().radius *= modifier;
+                break;
+        }
     }
 }
