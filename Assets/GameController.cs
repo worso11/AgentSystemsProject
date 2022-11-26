@@ -31,7 +31,7 @@ public class GameController : MonoBehaviour
         
         floor.transform.localScale = new Vector3(mapSize, 0.1f, mapSize);
         floor.GetComponent<NavMeshSurface>().BuildNavMesh();
-        GameObject.FindWithTag("MainCamera").transform.position = new Vector3(0, mapSize/2, -(4*mapSize)/6);
+        GameObject.FindWithTag("MainCamera").transform.position = new Vector3(0, 7*mapSize/10, -7*mapSize/10);
         
         for (var i = 0; i < agentNumber; i++)
         {
