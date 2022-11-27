@@ -20,25 +20,40 @@ public class Plant : MonoBehaviour
 
         if (Gathered > 1)
         {
-            switch (Agents[0].IsAggressive(), Agents[1].IsAggressive())
+            if (Agents[0].GetSize() >= Agents[1].GetSize()*2)
             {
-                case (true, true):
-                    Agents[0].StartMoving(0.25f);
-                    Agents[1].StartMoving(0.25f);
-                    break;
-                case (true, false):
-                    Agents[0].StartMoving(0.75f);
-                    Agents[1].StartMoving(0.25f);
-                    break;
-                case (false, true):
-                    Agents[0].StartMoving(0.25f);
-                    Agents[1].StartMoving(0.75f);
-                    break;
-                case (false, false):
-                    Agents[0].StartMoving(0.5f);
-                    Agents[1].StartMoving(0.5f);
-                    break;
-            }   
+                Debug.Log($"$Agent {Agents[0].GetSize()} eats {Agents[1].GetSize()}");
+                Agents[0].StartMoving(2f);
+                Destroy(Agents[1].gameObject);
+            }
+            else if (Agents[1].GetSize() >= Agents[0].GetSize() * 2)
+            {
+                Debug.Log($"$Agent {Agents[1].GetSize()} eats {Agents[0].GetSize()}");
+                Agents[1].StartMoving(2f);
+                Destroy(Agents[0].gameObject);
+            }
+            else
+            {
+                switch (Agents[0].IsAggressive(), Agents[1].IsAggressive())
+                {
+                    case (true, true):
+                        Agents[0].StartMoving(0.25f);
+                        Agents[1].StartMoving(0.25f);
+                        break;
+                    case (true, false):
+                        Agents[0].StartMoving(0.75f);
+                        Agents[1].StartMoving(0.25f);
+                        break;
+                    case (false, true):
+                        Agents[0].StartMoving(0.25f);
+                        Agents[1].StartMoving(0.75f);
+                        break;
+                    case (false, false):
+                        Agents[0].StartMoving(0.5f);
+                        Agents[1].StartMoving(0.5f);
+                        break;
+                }    
+            }
         }
         else
         {

@@ -13,6 +13,8 @@ namespace DefaultNamespace
         
         public float Speed;
 
+        public float Size;
+
         public Vector3 PositionToFollow;
 
         public Vector3 SpawnPosition;

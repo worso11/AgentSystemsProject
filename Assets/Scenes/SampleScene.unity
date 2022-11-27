@@ -502,6 +502,9 @@ MonoBehaviour:
   speedModifier: 0.1
   initRange: 5
   rangeModifier: 0.1
+  initSize: 1
+  sizeModifier: 0.1
+  grouped: 0
 --- !u!4 &1271913294
 Transform:
   m_ObjectHideFlags: 0

@@ -59,6 +59,7 @@ public class AgentMovementController : MonoBehaviour {
             NavMeshAgent = GetComponent<NavMeshAgent>(),
             SpawnPosition = transform.position,
             Speed = GetComponent<NavMeshAgent>().speed,
+            Size = transform.localScale.y,
             Food = 0,
             Aggressive = isAggressive
         };
@@ -215,22 +216,33 @@ public class AgentMovementController : MonoBehaviour {
     {
         _agent.Speed = GetComponent<NavMeshAgent>().speed;
     }
+    
+    public void UpdateSize()
+    {  
+        _agent.Size = transform.localScale.y;
+    }
 
     public void Mutate(GameObject parent, float[,] modifiers)
     {
-        var trait = Random.Range(0, 2);
+        var trait = Random.Range(0, 3);
         var modifier  = modifiers[trait, Random.Range(0, 2)];
 
         GetComponent<NavMeshAgent>().speed = parent.GetComponent<NavMeshAgent>().speed;
         GetComponent<CapsuleCollider>().radius = parent.GetComponent<CapsuleCollider>().radius;
+        transform.localScale = parent.transform.localScale;
         
         switch (trait)
         {
             case 0:
                 GetComponent<NavMeshAgent>().speed *= modifier;
+                UpdateSpeed();
                 break;
             case 1:
                 GetComponent<CapsuleCollider>().radius *= modifier;
+                break;
+            case 2:
+                transform.localScale = new Vector3(1, transform.localScale.y*modifier, 1);
+                UpdateSize();
                 break;
         }
     }
@@ -239,6 +251,9 @@ public class AgentMovementController : MonoBehaviour {
     {
         return _agent.Aggressive;
     }
-    
-    
+
+    public float GetSize()
+    {
+        return _agent.Size;
+    }
 }

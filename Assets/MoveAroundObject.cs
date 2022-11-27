@@ -46,6 +46,7 @@ public class MoveAroundObject : MonoBehaviour
         }
 
         _distanceFromTarget -= Input.mouseScrollDelta.y * _scale;
+        _distanceFromTarget = Mathf.Clamp(_distanceFromTarget, 1, Single.PositiveInfinity);
 
         // Apply clamping for x rotation 
         _rotationX = Mathf.Clamp(_rotationX, _rotationXMinMax.x, _rotationXMinMax.y);

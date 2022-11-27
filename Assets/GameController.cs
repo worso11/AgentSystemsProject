@@ -20,6 +20,8 @@ public class GameController : MonoBehaviour
     public float speedModifier;
     public float initRange;
     public float rangeModifier;
+    public float initSize;
+    public float sizeModifier;
     public bool grouped;
 
     private List<GameObject> _agents;
@@ -38,7 +40,7 @@ public class GameController : MonoBehaviour
         for (var i = 0; i < pacificAgentNumber + aggressiveAgentNumber; i++)
         {
             /* Get the spawn position */
-            var spawnPos = GetSpawnPosition(i, pacificAgentNumber + aggressiveAgentNumber);
+            var spawnPos = GetSpawnPosition(i, pacificAgentNumber + aggressiveAgentNumber, initSize);
          
             /* Now spawn */
             var agent = Instantiate(agentPrefab, spawnPos, Quaternion.identity);
@@ -47,7 +49,9 @@ public class GameController : MonoBehaviour
             agentInfo.time = roundTime;
             agent.GetComponent<CapsuleCollider>().radius = initRange;
             agent.GetComponent<NavMeshAgent>().speed = initSpeed;
+            agent.transform.localScale = new Vector3(1,initSize, 1);
             agentInfo.UpdateSpeed();
+            agentInfo.UpdateSize();
 
             /* Rotate the enemy to face towards player */
             agent.transform.LookAt(Vector3.zero);
@@ -77,6 +81,12 @@ public class GameController : MonoBehaviour
         {
             foreach (var agent in _agents.ToList())
             {
+                if (agent.gameObject == null)
+                {
+                    _agents.Remove(agent);
+                    continue;
+                }
+                
                 var agentInfo = agent.GetComponent<AgentMovementController>().GetAgent();
 
                 if (agent.transform.position != agentInfo.SpawnPosition || agentInfo.Food < 1f)
@@ -91,15 +101,13 @@ public class GameController : MonoBehaviour
                     var newAgentInfo = newAgent.GetComponent<AgentMovementController>();
                     
                     newAgentInfo.time = roundTime;
-                    newAgentInfo.Mutate(agent, new [,]{{1-speedModifier, 1+speedModifier}, {1-rangeModifier, 1+rangeModifier}});
-                    newAgentInfo.UpdateSpeed();
+                    newAgentInfo.Mutate(agent, new [,]{{1-speedModifier, 1+speedModifier}, {1-rangeModifier, 1+rangeModifier}, {1-sizeModifier, 1+sizeModifier}});
 
                     /* Rotate the enemy to face towards player */
                     newAgent.transform.LookAt(Vector3.zero);
             
                     if (agentInfo.Aggressive)
                     {
-                        Debug.Log("asdasdasdas");
                         newAgent.GetComponent<AgentMovementController>().GetAgent().Aggressive = true;
                         newAgent.GetComponent<Renderer>().material.color = Color.red;
                     }
@@ -134,7 +142,7 @@ public class GameController : MonoBehaviour
             {
                 var agent = _agents[i];
                 var isAggressive = agent.GetComponent<AgentMovementController>().GetAgent().Aggressive;
-                agent.transform.position = GetSpawnPosition(i, _agents.Count);
+                agent.transform.position = GetSpawnPosition(i, _agents.Count, agent.transform.localScale.y);
                 agent.GetComponent<AgentMovementController>().Initialize(isAggressive);
             }
         }
@@ -142,7 +150,7 @@ public class GameController : MonoBehaviour
         _timeLeft -= Time.deltaTime;
     }
 
-    private Vector3 GetSpawnPosition(int position, int numberOfPositions)
+    private Vector3 GetSpawnPosition(int position, int numberOfPositions, float size)
     {
         /* Distance around the circle */  
         var radians = 2 * MathF.PI / numberOfPositions * position;
@@ -154,7 +162,7 @@ public class GameController : MonoBehaviour
         var spawnDir = new Vector3 (horizontal, 0, vertical);
          
         /* Get the spawn position */ 
-        return new Vector3 (0, 1, 0) + spawnDir * ((mapSize-1)/2); // Radius is just the distance away from the point
+        return new Vector3 (0, size, 0) + spawnDir * ((mapSize-1)/2); // Radius is just the distance away from the point
     }
 
     private void SpawnPlants()
