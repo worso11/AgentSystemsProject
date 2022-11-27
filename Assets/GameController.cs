@@ -20,6 +20,7 @@ public class GameController : MonoBehaviour
     public float speedModifier;
     public float initRange;
     public float rangeModifier;
+    public bool grouped;
 
     private List<GameObject> _agents;
     private float _timeLeft;
@@ -50,8 +51,14 @@ public class GameController : MonoBehaviour
 
             /* Rotate the enemy to face towards player */
             agent.transform.LookAt(Vector3.zero);
-
-            if (i < aggressiveAgentNumber)
+            
+            if (grouped && i < aggressiveAgentNumber 
+                || (!grouped && ((aggressiveAgentNumber >= pacificAgentNumber 
+                                  && (i < aggressiveAgentNumber - pacificAgentNumber 
+                                      || i % 2 == 0)) 
+                                 || (pacificAgentNumber > aggressiveAgentNumber 
+                                     && i > pacificAgentNumber - aggressiveAgentNumber 
+                                     && i % 2 == 0))))
             {
                 agentInfo.GetAgent().Aggressive = true;
                 agent.GetComponent<Renderer>().material.color = Color.red;
