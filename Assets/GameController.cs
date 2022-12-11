@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -24,6 +23,13 @@ public class GameController : MonoBehaviour
     public float sizeModifier;
     public bool grouped;
 
+    [Header("Statistics")]
+    public float averageSpeed;
+    public float averageRange;
+    public float averageSize;
+    public float pacifistNumber;
+    public float aggressiveNumber;
+    
     private List<GameObject> _agents;
     private float _timeLeft;
     
@@ -72,6 +78,7 @@ public class GameController : MonoBehaviour
         }
 
         SpawnPlants();
+        UpdateStatistics();
     }
 
     // Update is called once per frame
@@ -116,27 +123,10 @@ public class GameController : MonoBehaviour
                 }
             }
 
-            var aggr = 0;
-            var pac = 0;
-            
-            foreach (var agent in _agents.ToList())
-            {
-                if (agent.GetComponent<AgentMovementController>().GetAgent().Aggressive)
-                {
-                    aggr += 1;
-                }
-                else
-                {
-                    pac += 1;
-                }
-            }
-
-            Debug.Log($"Pacifist: {pac}");
-            Debug.Log($"Aggressive: {aggr}");
-            
             _timeLeft = roundTime;
             
             SpawnPlants();
+            UpdateStatistics();
 
             for (var i = 0; i < _agents.Count; i++)
             {
@@ -182,5 +172,37 @@ public class GameController : MonoBehaviour
 
             enemy.transform.LookAt(Vector3.zero);
         }
+    }
+
+    private void UpdateStatistics()
+    {
+        var totalSpeed = 0f;
+        var totalRange = 0f;
+        var totalSize = 0f;
+        var aggr = 0;
+        var pac = 0;
+        
+        foreach (var agent in _agents.ToList())
+        {
+            totalSpeed += agent.GetComponent<NavMeshAgent>().speed;
+            totalRange += agent.GetComponent<CapsuleCollider>().radius;
+            totalSize += agent.transform.localScale.y;
+            if (agent.GetComponent<AgentMovementController>().GetAgent().Aggressive)
+            {
+                aggr += 1;
+            }
+            else
+            {
+                pac += 1;
+            }
+        }
+
+        averageSpeed = totalSpeed / _agents.Count;
+        averageRange = totalRange / _agents.Count;
+        averageSize = totalSize / _agents.Count;
+        pacifistNumber = pac;
+        aggressiveNumber = aggr;
+        Debug.Log($"Pacifist: {pac}");
+        Debug.Log($"Aggressive: {aggr}");
     }
 }

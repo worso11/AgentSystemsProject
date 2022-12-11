@@ -20,13 +20,13 @@ public class Plant : MonoBehaviour
 
         if (Gathered > 1)
         {
-            if (Agents[0].GetSize() >= Agents[1].GetSize()*2)
+            if (Agents[0].GetSize() >= Agents[1].GetSize()*2 && Agents[0].IsAggressive())
             {
                 Debug.Log($"$Agent {Agents[0].GetSize()} eats {Agents[1].GetSize()}");
                 Agents[0].StartMoving(2f);
                 Destroy(Agents[1].gameObject);
             }
-            else if (Agents[1].GetSize() >= Agents[0].GetSize() * 2)
+            else if (Agents[1].GetSize() >= Agents[0].GetSize()*2 && Agents[1].IsAggressive())
             {
                 Debug.Log($"$Agent {Agents[1].GetSize()} eats {Agents[0].GetSize()}");
                 Agents[1].StartMoving(2f);
@@ -37,8 +37,8 @@ public class Plant : MonoBehaviour
                 switch (Agents[0].IsAggressive(), Agents[1].IsAggressive())
                 {
                     case (true, true):
-                        Agents[0].StartMoving(0.25f);
-                        Agents[1].StartMoving(0.25f);
+                        Agents[0].StartMoving(0.35f);
+                        Agents[1].StartMoving(0.35f);
                         break;
                     case (true, false):
                         Agents[0].StartMoving(0.75f);
