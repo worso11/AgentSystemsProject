@@ -495,16 +495,29 @@ MonoBehaviour:
   floor: {fileID: 763648947}
   pacificAgentNumber: 10
   aggressiveAgentNumber: 10
-  grassNumber: 100
   mapSize: 100
-  roundTime: 10
   initSpeed: 10
-  speedModifier: 0.1
   initRange: 5
-  rangeModifier: 0.1
   initSize: 1
-  sizeModifier: 0.1
   grouped: 0
+  grassNumber: 100
+  roundTime: 10
+  speedModifier: 0.1
+  rangeModifier: 0.1
+  sizeModifier: 0.1
+  balanceTraits: 0
+  foodOnSoloGather: 1
+  foodPacifistWithPacifist: 0.5
+  foodPacifistWithAggressive: 0.25
+  foodAggressiveWithPacifist: 0.75
+  foodAggressiveWithAggressive: 0.25
+  foodOnEatingOther: 2
+  sizeProportionToEatOther: 2
+  averageSpeed: 0
+  averageRange: 0
+  averageSize: 0
+  pacifistNumber: 0
+  aggressiveNumber: 0
 --- !u!4 &1271913294
 Transform:
   m_ObjectHideFlags: 0

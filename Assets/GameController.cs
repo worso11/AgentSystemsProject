@@ -7,21 +7,36 @@ using Random = UnityEngine.Random;
 
 public class GameController : MonoBehaviour
 {
+    [Header("Initial parameters")]
     public GameObject agentPrefab;
     public GameObject plantPrefab;
     public GameObject floor;
     public int pacificAgentNumber;
     public int aggressiveAgentNumber;
-    public int grassNumber;
     public float mapSize;
-    public float roundTime;
     public float initSpeed;
-    public float speedModifier;
     public float initRange;
-    public float rangeModifier;
     public float initSize;
-    public float sizeModifier;
     public bool grouped;
+    
+    [Header("Modifiable per round")]
+    public int grassNumber;
+    public float roundTime;
+    
+    [Header("Traits options")]
+    public float speedModifier;
+    public float rangeModifier;
+    public float sizeModifier;
+    public bool balanceTraits;
+
+    [Header("Food parameters")] 
+    public float foodOnSoloGather;
+    public float foodPacifistWithPacifist;
+    public float foodPacifistWithAggressive;
+    public float foodAggressiveWithPacifist;
+    public float foodAggressiveWithAggressive;
+    public float foodOnEatingOther;
+    public float sizeProportionToEatOther;
 
     [Header("Statistics")]
     public float averageSpeed;
@@ -108,7 +123,7 @@ public class GameController : MonoBehaviour
                     var newAgentInfo = newAgent.GetComponent<AgentMovementController>();
                     
                     newAgentInfo.time = roundTime;
-                    newAgentInfo.Mutate(agent, new [,]{{1-speedModifier, 1+speedModifier}, {1-rangeModifier, 1+rangeModifier}, {1-sizeModifier, 1+sizeModifier}});
+                    newAgentInfo.Mutate(agent, new [,]{{1-speedModifier, 1+speedModifier}, {1-rangeModifier, 1+rangeModifier}, {1-sizeModifier, 1+sizeModifier}}, balanceTraits);
 
                     /* Rotate the enemy to face towards player */
                     newAgent.transform.LookAt(Vector3.zero);
@@ -168,9 +183,11 @@ public class GameController : MonoBehaviour
         {
             var position = Random.insideUnitSphere * (mapSize/2 - 5);
             position.y = 0;
-            var enemy = Instantiate(plantPrefab, position, Quaternion.identity);
+            var plant = Instantiate(plantPrefab, position, Quaternion.identity);
 
-            enemy.transform.LookAt(Vector3.zero);
+            plant.transform.LookAt(Vector3.zero);
+            plant.GetComponent<Plant>().Initialize(foodOnSoloGather, foodPacifistWithPacifist, foodPacifistWithAggressive,
+                                                    foodAggressiveWithPacifist, foodAggressiveWithAggressive, foodOnEatingOther, sizeProportionToEatOther);
         }
     }
 

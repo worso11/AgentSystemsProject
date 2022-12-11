@@ -222,15 +222,35 @@ public class AgentMovementController : MonoBehaviour {
         _agent.Size = transform.localScale.y;
     }
 
-    public void Mutate(GameObject parent, float[,] modifiers)
+    public void Mutate(GameObject parent, float[,] modifiers, bool balanceTraits)
     {
         var trait = Random.Range(0, 3);
         var modifier  = modifiers[trait, Random.Range(0, 2)];
-
+        
         GetComponent<NavMeshAgent>().speed = parent.GetComponent<NavMeshAgent>().speed;
         GetComponent<CapsuleCollider>().radius = parent.GetComponent<CapsuleCollider>().radius;
         transform.localScale = parent.transform.localScale;
-        
+
+        if (balanceTraits)
+        {
+            var trait2 = Random.Range(0, 3);
+
+            while (trait == trait2)
+            {
+                trait2 = Random.Range(0, 3);
+            }
+            
+            ModifyTrait(trait, modifiers[trait, 0]);
+            ModifyTrait(trait2, modifiers[trait2, 1]);
+        }
+        else
+        {
+            ModifyTrait(trait, modifier);   
+        }
+    }
+
+    private void ModifyTrait(int trait, float modifier)
+    {
         switch (trait)
         {
             case 0:
